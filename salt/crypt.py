@@ -214,12 +214,14 @@ class Auth(object):
                   'reason, verify your salt keys')
         return False
 
-    def sign_in(self):
+    def sign_in(self, timeout=30):
         '''
         Send a sign in request to the master, sets the key information and
         returns a dict containing the master publish interface to bind to
         and the decrypted aes key for transport decryption.
         '''
+        if timeout < 0:
+            raise TypeError('A timeout is required for sign-in')
         auth = {}
         try:
             self.opts['master_ip'] = salt.utils.dns_check(self.opts['master'], True)
@@ -230,6 +232,12 @@ class Auth(object):
         socket.connect(self.opts['master_uri'])
         payload = self.serial.dumps(self.minion_sign_in_payload())
         socket.send(payload)
+        poller = zmq.Poller()
+        poller.register(socket, zmq.POLLIN)
+        if not poller.poll(timeout):
+            log.error('Did not get a response from the master on connection '
+                      'attempt for %d seconds.  Giving up' % timeout)
+            sys.exit(42)
         payload = self.serial.loads(socket.recv())
         if 'load' in payload:
             if 'ret' in payload['load']:
