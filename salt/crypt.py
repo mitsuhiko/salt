@@ -234,7 +234,7 @@ class Auth(object):
         socket.send(payload)
         poller = zmq.Poller()
         poller.register(socket, zmq.POLLIN)
-        if not poller.poll(timeout):
+        if not poller.poll(int(timeout * 1000)):
             log.error('Did not get a response from the master on connection '
                       'attempt for %d seconds.  Giving up' % timeout)
             sys.exit(42)
