@@ -29,7 +29,7 @@ about this, at least.
   start on ((((filesystem and runlevel [!06]) and started dbus) and (drm-device-added card0 PRIMARY_DEVICE_FOR_DISPLAY=1 or stopped udev-fallback-graphics)) or runlevel PREVLEVEL=S)
   stop on runlevel [016]
 
-DO NOT use this module on red hat systems, as red hat systems should use the
+DO NOT use this module on Red Hat systems, as Red Hat systems should use the
 rh_service module, since red hat systems support chkconfig
 '''
 # Import Python libs
@@ -121,6 +121,10 @@ def _sysv_is_enabled(name):
 
 
 def _iter_service_names():
+    '''
+    Detect all of the service names available to upstart via init configuration
+    files and via classic sysv init scripts
+    '''
     found = set()
     for line in glob.glob('/etc/init.d/*'):
         name = os.path.basename(line)
