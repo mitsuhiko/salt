@@ -122,6 +122,19 @@ def _sysv_is_enabled(name):
     return not _sysv_is_disabled(name)
 
 
+def _iter_service_names():
+    found = set()
+    for line in glob.glob('/etc/init.d/*'):
+        name = os.path.basename(line)
+        found.add(name)
+        yield name
+    for line in glob.glob('/etc/init/*.conf'):
+        name = os.path.basename(line)[:-5]
+        if name in found:
+            continue
+        yield name
+
+
 def get_enabled():
     '''
     Return the enabled services
@@ -131,8 +144,7 @@ def get_enabled():
         salt '*' service.get_enabled
     '''
     ret = set()
-    for line in glob.glob('/etc/init.d/*'):
-        name = os.path.basename(line)
+    for name in _iter_service_names():
         if _service_is_upstart(name):
             if _upstart_is_enabled(name):
                 ret.add(name)
@@ -152,8 +164,7 @@ def get_disabled():
         salt '*' service.get_disabled
     '''
     ret = set()
-    for line in glob.glob('/etc/init.d/*'):
-        name = os.path.basename(line)
+    for name in _iter_service_names():
         if _service_is_upstart(name):
             if _upstart_is_disabled(name):
                 ret.add(name)
