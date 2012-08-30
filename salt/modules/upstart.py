@@ -100,9 +100,7 @@ def _service_is_sysv(name):
     executable, like README or skeleton.
     '''
     script = '/etc/init.d/{0}'.format(name)
-    if not _is_symlink(script):
-        return os.access(script, os.X_OK)
-    return False
+    return not _service_is_upstart(name) and os.access(script, os.X_OK)
 
 
 def _sysv_is_disabled(name):
